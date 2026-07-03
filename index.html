@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Müracaat Takip</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root{
+  --bg:#EEF1EC;
+  --surface:#FFFFFF;
+  --ink:#16302B;
+  --ink-soft:#54655F;
+  --line:#DDE3DD;
+  --teal:#2E7D6B;
+  --teal-soft:#E3F0EB;
+  --amber:#BE7A3B;
+  --amber-soft:#F5E9DC;
+  --indigo:#4C5C9C;
+  --indigo-soft:#E6E8F3;
+  --rust:#B5502F;
+  --rust-soft:#F5E1D9;
+  --green:#3E8E5A;
+  --green-soft:#E1F0E6;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+h1,h2,h3,.disp{font-family:'Fraunces',serif;}
+
+/* ---------- HEADER ---------- */
+header{
+  background:var(--ink);
+  color:#fff;
+  padding:22px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+header .brand{display:flex;align-items:center;gap:14px;}
+header .brand svg{width:38px;height:38px;flex:none;}
+header h1{margin:0;font-size:22px;font-weight:600;letter-spacing:.2px;}
+header p{margin:2px 0 0;font-size:12.5px;color:#B9C9C2;}
+.newbtn{
+  background:var(--teal);
+  color:#fff;
+  border:none;
+  padding:11px 20px;
+  border-radius:8px;
+  font-family:'Inter';
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  transition:transform .15s ease, background .15s ease;
+}
+.newbtn:hover{background:#256456;transform:translateY(-1px);}
+
+.col-head{
+  display:flex;align-items:center;gap:8px;
+  padding:0 4px 12px;
+}
+.col-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+.col-head h3{margin:0;font-size:13.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ink-soft);}
+.col-count{
+  margin-left:auto;font-family:'IBM Plex Mono';font-size:12px;
+  background:var(--surface);border:1px solid var(--line);
+  padding:1px 8px;border-radius:20px;color:var(--ink-soft);
+}
+.empty-col{
+  border:1.5px dashed var(--line);border-radius:10px;
+  padding:18px 10px;text-align:center;color:#9AA79F;font-size:12.5px;
+}
+
+.badge{
+  font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;
+  display:inline-flex;align-items:center;gap:4px;
+}
+
+/* ---------- MODAL ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(22,48,43,.45);
+  display:none;align-items:center;justify-content:center;z-index:50;
+  padding:24px;backdrop-filter:blur(2px);
+}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--surface);
+  width:100%;max-width:920px;max-height:88vh;
+  border-radius:14px;overflow:hidden;
+  display:grid;grid-template-columns:230px 1fr;
+  box-shadow:0 24px 60px rgba(0,0,0,.28);
+}
+@media(max-width:760px){.modal{grid-template-columns:1fr;max-height:92vh;}}
+
+/* rail */
+.rail{
+  background:var(--ink);color:#fff;
+  padding:24px 20px;display:flex;flex-direction:column;
+  overflow-y:auto;
+}
+.rail-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+.rail .no{font-family:'IBM Plex Mono';font-size:12px;color:#9FCABD;}
+.rail .close{
+  background:none;border:none;color:#B9C9C2;font-size:20px;cursor:pointer;line-height:1;padding:2px;
+}
+.rail .close:hover{color:#fff;}
+.pipe{position:relative;padding-left:26px;}
+.pipe::before{
+  content:'';position:absolute;left:9px;top:6px;bottom:6px;width:2px;
+  background:rgba(255,255,255,.18);
+}
+.pipe-fill{position:absolute;left:9px;top:6px;width:2px;background:var(--teal);transition:height .4s ease;}
+.stage-item{position:relative;padding:0 0 26px;cursor:pointer;}
+.stage-item:last-child{padding-bottom:0;}
+.stage-dot{
+  position:absolute;left:-26px;top:0;width:20px;height:20px;border-radius:50%;
+  background:#2A4841;border:2px solid rgba(255,255,255,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono';font-size:10px;font-weight:600;color:#B9C9C2;
+  transition:all .2s ease;
+}
+.stage-item.done .stage-dot{background:var(--teal);border-color:var(--teal);color:#fff;}
+.stage-item.active .stage-dot{background:#fff;border-color:#fff;color:var(--ink);}
+.stage-item .lbl{font-size:13.5px;font-weight:600;color:#B9C9C2;}
+.stage-item.done .lbl,.stage-item.active .lbl{color:#fff;}
+.stage-item .sub{font-size:11.5px;color:#8AA69C;margin-top:2px;line-height:1.4;}
+
+/* panel */
+.panel{overflow-y:auto;padding:26px 30px 30px;}
+.panel h2{margin:0 0 2px;font-size:20px;}
+.panel .meta{font-size:12.5px;color:var(--ink-soft);margin-bottom:22px;}
+.section{
+  border:1px solid var(--line);border-radius:10px;margin-bottom:14px;overflow:hidden;
+}
+.sec-head{
+  padding:13px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;
+  background:#FAFBF9;
+}
+.sec-head .idx{
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:#fff;flex:none;
+}
+.sec-head .t{font-weight:600;font-size:14px;flex:1;}
+.sec-head .stat{font-size:11.5px;color:var(--ink-soft);}
+.sec-head .chev{transition:transform .2s ease;color:var(--ink-soft);}
+.sec-body{padding:16px 18px 18px;border-top:1px solid var(--line);display:none;}
+.section.open .sec-body{display:block;}
+.section.open .chev{transform:rotate(180deg);}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px;}
+.field input[type=text],.field input[type=number],.field select{
+  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:7px;
+  font-family:'Inter';font-size:14px;background:#fff;color:var(--ink);
+}
+.field input:focus,.field select:focus{outline:2px solid var(--teal);outline-offset:0;border-color:var(--teal);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:520px){.row2,.row3{grid-template-columns:1fr;}}
+
+.choice-grp{display:flex;gap:8px;flex-wrap:wrap;}
+.choice{
+  border:1.5px solid var(--line);border-radius:7px;padding:9px Yalnızca metin işleyecek ve oluşturacak şekilde tasarlandım. Size bu konuda yardımcı olamıyorum.
